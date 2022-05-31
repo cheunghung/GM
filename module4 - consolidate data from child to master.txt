@@ -1,0 +1,99 @@
+Option Explicit
+Option Base 1
+
+
+Sub SyncFiles()
+
+Dim awb As Workbook, twb As Workbook
+Dim nNames As Integer, nItems As Integer, nstudents As Integer, idx As Integer
+Dim lastrow1 As Integer, lastrow2 As Integer
+Dim G() As Variant, filename As String, i As Integer, Name As String, j As Integer
+
+Dim findaddress As String, path As String
+Dim findarray As Variant, colletter As String
+
+
+Application.ScreenUpdating = False
+Application.DisplayAlerts = False
+
+
+Sheets("Path").Visible = True
+
+
+Set twb = ThisWorkbook
+twb.Activate
+Sheets("Roster").Select
+
+'unfilter twb roster
+If Sheets("Roster").AutoFilterMode Then
+    Sheets("Roster").AutoFilter.ShowAllData
+End If
+
+'finding lastrow in twb roster
+lastrow1 = Sheets("Roster").Cells(Rows.Count, "A").End(xlUp).Row
+
+'finding no. of names in twb roster
+nNames = WorksheetFunction.CountA(Range("A2:A" & lastrow1))
+
+
+'finding address of the last column heading in twb roster
+nItems = WorksheetFunction.CountA(Rows(1))
+ReDim G(nItems) As Variant
+Range("A1").Select
+findaddress = ActiveCell.Offset(0, nItems - 1).Address
+findarray = Split(findaddress, "$")
+colletter = findarray(1)
+
+'retrieving file path to section files from "Path" worksheet
+filename = Dir(Sheets("Path").Range("A1").Value & "\*.xlsx")
+path = twb.Sheets("Path").Range("A1")
+
+Do
+    Workbooks.Open path & "\" & filename
+    Set awb = ActiveWorkbook
+    awb.Sheets(1).Activate
+    
+    'unfilter awb roster
+    If Sheets(1).AutoFilterMode Then
+        Sheets(1).AutoFilter.ShowAllData
+    End If
+    
+    'finding last row in awb roster
+    lastrow2 = Sheets(1).Cells(Rows.Count, "A").End(xlUp).Row
+    
+    'find no. of students in awb roster
+    nstudents = WorksheetFunction.CountA(Range("A2:A" & lastrow2))
+    
+    Range("A2").Select
+    
+    'iterating each student name in awb
+    'then equating name (non-list) AND copying relevant row of data pertaining to that name (list)
+    'then pasting relevant row to twb based on name match
+    For i = 1 To nstudents
+        awb.Activate
+        Name = ActiveCell.Offset(i - 1, 0)
+        G = Range("C" & i + 1 & ":" & colletter & i + 1)
+        twb.Sheets("Roster").Activate
+        idx = WorksheetFunction.Match(Name, Range("A2:A" & lastrow1), 0)
+        Range("D" & idx + 1 & ":" & colletter & idx + 1) = G
+    Next i
+    awb.Close SaveChanges:=True
+    filename = Dir
+Loop Until filename = ""
+
+twb.Activate
+Range("A1").Select
+
+Application.ScreenUpdating = True
+Application.DisplayAlerts = True
+Sheets("Path").Visible = False
+
+
+twb.Save
+
+Unload UserForm2
+
+MsgBox "Files synced!"
+End Sub
+
+

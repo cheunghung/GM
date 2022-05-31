@@ -1,0 +1,45 @@
+Option Explicit
+Option Base 1
+
+Sub runform1()
+
+Call populatecombo
+UserForm1.Show
+
+End Sub
+
+Sub populatecombo()
+Dim numbers(10) As Variant, i As Integer
+
+'populating initialize spreadsheets form
+'asking user how many columns for homework, exam, lab
+
+'homework
+For i = 1 To 10
+    numbers(i) = i
+    UserForm1.ComboBox1.AddItem numbers(i)
+Next i
+UserForm1.ComboBox1.Text = numbers(1)
+
+
+'exam
+For i = 1 To 10
+    numbers(i) = i
+    UserForm1.ComboBox2.AddItem numbers(i)
+Next i
+UserForm1.ComboBox2.Text = numbers(1)
+
+'lab
+For i = 1 To 10
+    numbers(i) = i
+    UserForm1.ComboBox3.AddItem numbers(i)
+Next i
+UserForm1.ComboBox3.Text = numbers(1)
+
+
+End Sub
+
+
+
+
+

@@ -1,0 +1,118 @@
+Option Explicit
+
+Private Sub CommandButton1_Click()
+Range("D2").Select
+MsgBox ("Grade on this assignment is " & ActiveCell.Offset(UserForm5.ComboBox1.ListIndex, UserForm5.ComboBox2.ListIndex))
+End Sub
+
+Private Sub CommandButton2_Click()
+
+Dim NewGrade As Double, Ans As Integer, lastrow As Integer, nstudents As Integer, i As Integer
+Dim twb As Workbook, awb As Workbook
+Dim filepath As String, filename As String, section As String
+Dim G1() As Variant
+
+Dim findaddress1 As String, nItems1 As Integer
+Dim findarray1 As Variant, colletter1 As String
+
+Dim findaddress2 As String, nItems2 As Integer
+Dim findarray2 As Variant, colletter2 As String
+
+
+On Error GoTo here
+
+Set twb = ThisWorkbook
+twb.Activate
+Sheets("Roster").Select
+
+'unfilter twb roster
+If Sheets("Roster").AutoFilterMode Then
+    Sheets("Roster").AutoFilter.ShowAllData
+End If
+
+
+'finding address of the last column heading in twb roster
+nItems1 = WorksheetFunction.CountA(Rows(1))
+'ReDim G1(nItems1) As Variant
+Range("A1").Select
+findaddress1 = ActiveCell.Offset(0, nItems1 - 1).Address
+findarray1 = Split(findaddress1, "$")
+colletter1 = findarray1(1)
+
+
+'amending grade in twb
+
+NewGrade = InputBox("What is new grade?")
+Range("D2").Select
+Ans = MsgBox("Are you sure you want to replace this grade?", vbYesNo)
+If Ans = 6 Then
+    ActiveCell.Offset(UserForm5.ComboBox1.ListIndex, UserForm5.ComboBox2.ListIndex) = NewGrade
+End If
+
+'recording relevant row data from D2 to colletter2
+Range("D2").Select
+G1 = Range("D" & UserForm5.ComboBox1.ListIndex + 2 & ":" & colletter1 & UserForm5.ComboBox1.ListIndex + 2)
+        
+'finding section no. of this student & retrieving filepath to section files
+Range("C2").Select
+section = ActiveCell.Offset(UserForm5.ComboBox1.ListIndex, 0)
+filepath = Sheets("Path").Range("A1").Value
+
+'opening awb
+Workbooks.Open filepath & "\Section " & section
+Set awb = ActiveWorkbook
+awb.Activate
+Sheets(1).Select
+
+'unfilter awb roster
+If Sheets(1).AutoFilterMode Then
+    Sheets(1).AutoFilter.ShowAllData
+End If
+
+
+'finding address of the last column heading in awb roster
+nItems2 = WorksheetFunction.CountA(Rows(1))
+Range("A1").Select
+findaddress2 = ActiveCell.Offset(0, nItems2 - 1).Address
+findarray2 = Split(findaddress2, "$")
+colletter2 = findarray2(1)
+
+
+'locating student in awb & finding first blank cell in that row (C) to paste data
+lastrow = Sheets(1).Cells(Rows.Count, "A").End(xlUp).Row
+nstudents = WorksheetFunction.CountA(Range("A2:A" & lastrow))
+
+For i = 1 To nstudents
+    Range("A2").Select
+    If ActiveCell.Offset(i - 1, 0) = UserForm5.ComboBox1.Text Then
+        Range("C" & i + 1 & ":" & colletter2 & i + 1) = G1
+    End If
+Next i
+
+
+awb.Close SaveChanges:=True
+
+'returning back to twb and closing userforms
+twb.Activate
+Sheets("Roster").Select
+
+Range("D2").Select
+ActiveCell.Offset(UserForm5.ComboBox1.ListIndex, UserForm5.ComboBox2.ListIndex).Select
+
+
+Unload UserForm5
+Unload UserForm2
+
+MsgBox ("Grade replaced to a " & NewGrade)
+
+
+here:
+End Sub
+
+Private Sub CommandButton3_Click()
+Unload UserForm5
+End Sub
+
+Private Sub UserForm_Click()
+
+End Sub

@@ -1,0 +1,68 @@
+Option Explicit
+
+Sub Search()
+
+'populate search & replace userform5
+
+Dim lastrow1 As Integer, nItems As Integer, nNames As Integer, i As Integer, noassigncol As Integer
+Dim findaddress As String, colletter As String
+Dim findarray As Variant, nAssignmentCol() As Variant
+Dim twb As Workbook
+
+Application.ScreenUpdating = False
+'Application.DisplayAlerts = False
+
+'Sheets("Path").Visible = True
+
+Set twb = ThisWorkbook
+twb.Activate
+Sheets("Roster").Select
+
+'unfilter twb roster
+If Sheets("Roster").AutoFilterMode Then
+    Sheets("Roster").AutoFilter.ShowAllData
+End If
+
+'finding lastrow in twb roster
+lastrow1 = Sheets("Roster").Cells(Rows.Count, "A").End(xlUp).Row
+
+'finding address of the last column heading in twb roster
+nItems = WorksheetFunction.CountA(Rows(1))
+Range("A1").Select
+findaddress = ActiveCell.Offset(0, nItems - 1).Address
+findarray = Split(findaddress, "$")
+colletter = findarray(1)
+
+
+'finding total of homework + exam + lab columns
+noassigncol = WorksheetFunction.CountA(Range("D1:" & colletter & "1"))
+
+'redim based on total homework + exam + lab columns
+ReDim nAssignmentCol(noassigncol) As Variant
+
+'iterating via assignment columns to populate combox2
+Range("D1").Select
+For i = 1 To noassigncol
+    nAssignmentCol(i) = ActiveCell.Offset(0, i - 1)
+    UserForm5.ComboBox2.AddItem nAssignmentCol(i)
+Next i
+
+'defaulting combobox text to first assignment heading
+UserForm5.ComboBox2.Text = nAssignmentCol(1)
+
+'finding no. of names in twb roster
+nNames = WorksheetFunction.CountA(Range("A2:A" & lastrow1))
+
+'iterating via student names to populate combox1
+Range("A2").Select
+For i = 1 To nNames
+    UserForm5.ComboBox1.AddItem ActiveCell.Offset(i - 1, 0)
+Next i
+UserForm5.ComboBox1.Text = Range("A2")
+
+
+
+UserForm5.Show
+
+End Sub
+

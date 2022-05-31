@@ -1,0 +1,83 @@
+Option Explicit
+Option Base 1
+
+
+Sub runform2()
+
+UserForm2.Show
+
+End Sub
+
+
+Sub runform3()
+
+Call populatecombo3
+UserForm3.Show
+
+End Sub
+
+
+
+Sub populatecombo3()
+Dim lists(3) As Variant, i As Integer
+
+'user choose the assignment type to delete
+
+lists(1) = "Homework"
+lists(2) = "Exam"
+lists(3) = "Lab"
+
+For i = 1 To 3
+    UserForm3.ComboBox1.AddItem lists(i)
+Next i
+
+UserForm3.ComboBox1.Text = lists(1)
+
+End Sub
+
+
+Sub runform4()
+
+Call populatecombo4
+UserForm4.Show
+
+End Sub
+
+
+Sub populatecombo4()
+Dim nItems As Integer, i As Integer
+Dim nAssignmentCol() As Variant, noassigncol As Integer
+Dim twb As Workbook
+Dim findaddress As String, findarray As Variant, colletter As String
+
+Set twb = ThisWorkbook
+twb.Activate
+
+Sheets("Roster").Select
+
+'populating delete columns form
+
+'finding address of the last column
+nItems = WorksheetFunction.CountA(Rows(1))
+Range("A1").Select
+findaddress = ActiveCell.Offset(0, nItems - 1).Address
+findarray = Split(findaddress, "$")
+colletter = findarray(1)
+    
+'finding total of homework + exam + lab columns
+noassigncol = WorksheetFunction.CountA(Range("D1:" & colletter & "1"))
+
+'redim based on total homework + exam + lab columns
+ReDim nAssignmentCol(noassigncol) As Variant
+
+'putting all homework + exam + lab columns in combobox for user to choose which column to delete
+Range("D1").Select
+For i = 1 To noassigncol
+    nAssignmentCol(i) = ActiveCell.Offset(0, i - 1)
+    UserForm4.ComboBox1.AddItem nAssignmentCol(i)
+Next i
+
+'defaulting combobox text to first assignment heading
+UserForm4.ComboBox1.Text = nAssignmentCol(1)
+
+End Sub

@@ -1,0 +1,147 @@
+Option Explicit
+
+Private Sub ComboBox1_Change()
+
+End Sub
+
+Private Sub CommandButton1_Click()
+
+Dim twb As Workbook, awb As Workbook
+Dim CategoryName As String, filename As String
+Dim findaddress As String, findarray As Variant, colletter As String, path As String
+Dim nItems As Integer, nInCategory As Integer, i As Integer
+
+Application.DisplayAlerts = False
+Application.ScreenUpdating = False
+
+Set twb = ThisWorkbook
+twb.Activate
+
+
+'Turnoff AutoFilter
+Sheets("Roster").EnableAutoFilter = True
+Sheets("Roster").Cells.AutoFilter
+
+
+CategoryName = UserForm3.ComboBox1.Text
+
+filename = Dir(Sheets("Path").Range("A1").Value & "\*.xlsx")
+path = twb.Sheets("Path").Range("A1")
+
+'adding new column to awb section files
+
+Do
+    Workbooks.Open path & "\" & filename
+    Set awb = ActiveWorkbook
+    awb.Activate
+    nItems = WorksheetFunction.CountA(Rows(1))
+    Range("A1").Select
+    nInCategory = 0
+
+    For i = 1 To nItems
+        
+        If Left(ActiveCell.Offset(0, i - 1), Len(CategoryName)) <> CategoryName _
+            And IsEmpty(ActiveCell.Offset(0, i)) And nInCategory = 0 Then
+            findaddress = ActiveCell.Offset(0, nItems).Address
+            findarray = Split(findaddress, "$")
+            colletter = findarray(1)
+            Columns(colletter & ":" & colletter).Select
+            Selection.Insert Shift:=xlToRight, CopyOrigin:=xlFormatFromLeftOrAbove
+            Range(colletter & "1") = CategoryName & " " & nInCategory + 1
+        End If
+        
+        If Left(ActiveCell.Offset(0, i - 1), Len(CategoryName)) = CategoryName Then
+            nInCategory = nInCategory + 1
+        End If
+
+
+        If Left(ActiveCell.Offset(0, i - 1), Len(CategoryName)) = CategoryName _
+            And ((Left(ActiveCell.Offset(0, i), Len(CategoryName)) <> CategoryName) Or IsEmpty(ActiveCell.Offset(0, i))) Then
+
+            findaddress = ActiveCell.Offset(0, i).Address
+            findarray = Split(findaddress, "$")
+            colletter = findarray(1)
+            Columns(colletter & ":" & colletter).Select
+            Selection.Insert Shift:=xlToRight, CopyOrigin:=xlFormatFromLeftOrAbove
+            Range(colletter & "1") = CategoryName & " " & nInCategory + 1
+        End If
+    Next i
+    Range("A1").Select
+    awb.Close SaveChanges:=True
+    filename = Dir
+Loop Until filename = ""
+
+
+'adding new column to twb master file
+
+twb.Activate
+Sheets("Roster").Select
+
+nItems = WorksheetFunction.CountA(Rows(1))
+Range("A1").Select
+nInCategory = 0
+
+
+
+
+For i = 1 To nItems
+
+
+    If Left(ActiveCell.Offset(0, i - 1), Len(CategoryName)) <> CategoryName _
+    And IsEmpty(ActiveCell.Offset(0, i)) And nInCategory = 0 Then
+        findaddress = ActiveCell.Offset(0, nItems).Address
+        findarray = Split(findaddress, "$")
+        colletter = findarray(1)
+        Columns(colletter & ":" & colletter).Select
+        Selection.Insert Shift:=xlToRight, CopyOrigin:=xlFormatFromLeftOrAbove
+        Range(colletter & "1") = CategoryName & " " & nInCategory + 1
+    End If
+    
+
+    If Left(ActiveCell.Offset(0, i - 1), Len(CategoryName)) = CategoryName Then
+        nInCategory = nInCategory + 1
+    End If
+    
+    
+    If Left(ActiveCell.Offset(0, i - 1), Len(CategoryName)) = CategoryName _
+        And ((Left(ActiveCell.Offset(0, i), Len(CategoryName)) <> CategoryName) Or IsEmpty(ActiveCell.Offset(0, i))) Then
+
+        findaddress = ActiveCell.Offset(0, i).Address
+        findarray = Split(findaddress, "$")
+        colletter = findarray(1)
+        Columns(colletter & ":" & colletter).Select
+        Selection.Insert Shift:=xlToRight, CopyOrigin:=xlFormatFromLeftOrAbove
+        Range(colletter & "1") = CategoryName & " " & nInCategory + 1
+    End If
+Next i
+
+
+'Turnon AutoFilter
+Sheets("Roster").EnableAutoFilter = True
+Sheets("Roster").Cells.AutoFilter
+
+Range("A1").Select
+
+
+Application.DisplayAlerts = True
+Application.ScreenUpdating = True
+
+twb.Save
+
+Unload UserForm3
+Unload UserForm2
+
+MsgBox ("A column for " & CategoryName & " " & nInCategory + 1 & " has been added to the files!")
+
+
+End Sub
+
+Private Sub CancelButton_Click()
+Unload UserForm1
+End Sub
+
+End Sub
+
+Private Sub CommandButton2_Click()
+Unload UserForm3
+End Sub

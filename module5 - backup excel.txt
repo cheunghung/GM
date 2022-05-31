@@ -1,0 +1,40 @@
+Option Explicit
+
+Sub MakeBackup()
+
+Dim path As String, NowArray As Variant
+Dim TodayDate As String
+Dim twb As Workbook
+
+Set twb = ThisWorkbook
+twb.Activate
+
+Application.DisplayAlerts = False
+Application.ScreenUpdating = False
+Sheets("Path").Visible = True
+
+
+path = Sheets("Path").Range("A2")
+NowArray = Split(Now(), " ")
+TodayDate = Replace(NowArray(0), "/", "-")
+
+
+
+With ThisWorkbook
+    .SaveCopyAs path & "\Grade_Manager_Backup_" & TodayDate & ".xlsm"
+End With
+
+
+Application.DisplayAlerts = True
+Application.ScreenUpdating = True
+Sheets("Path").Visible = False
+
+Unload UserForm2
+
+twb.Save
+
+MsgBox ("A backup of this file has been created in: " _
+    & vbCrLf & path)
+
+End Sub
+

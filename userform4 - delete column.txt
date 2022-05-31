@@ -1,0 +1,137 @@
+Option Explicit
+Option Base 1
+
+
+Private Sub CommandButton1_Click()
+
+Dim twb As Workbook, awb As Workbook
+Dim path As String, CategoryName As String, filename As String
+Dim nItems As Integer, i As Integer
+
+Dim findaddress As String
+Dim findarray As Variant, colletter As String
+Dim confirm As Integer, nCategory As Integer
+Dim splitcat As Variant, cat As String
+CategoryName = UserForm4.ComboBox1.Text
+
+confirm = MsgBox("Are you sure you want to delete " & CategoryName & " from all files?", 4, "Delete Column")
+
+If confirm = 6 Then GoTo here
+If confirm = 7 Then Exit Sub
+
+
+here:
+'Application.DisplayAlerts = False
+Application.ScreenUpdating = False
+
+Set twb = ThisWorkbook
+twb.Activate
+
+
+'Turnoff AutoFilter
+Sheets("Roster").EnableAutoFilter = True
+Sheets("Roster").Cells.AutoFilter
+
+
+filename = Dir(Sheets("Path").Range("A1").Value & "\*.xlsx")
+path = twb.Sheets("Path").Range("A1")
+
+'deleting column from awb section files
+
+Do
+    Workbooks.Open path & "\" & filename
+    Set awb = ActiveWorkbook
+    awb.Activate
+    nItems = WorksheetFunction.CountA(Rows(1))
+    Range("A1").Select
+
+    For i = 1 To nItems
+        If ActiveCell.Offset(0, i - 1) = CategoryName Then
+            findaddress = ActiveCell.Offset(0, i - 1).Address
+            findarray = Split(findaddress, "$")
+            colletter = findarray(1)
+            Columns(colletter & ":" & colletter).Select
+            Selection.Delete Shift:=xlToLeft
+        End If
+    Next i
+    
+    nItems = WorksheetFunction.CountA(Rows(1))
+    Range("A1").Select
+    nCategory = 0
+    
+    For i = 1 To nItems
+        If Left(ActiveCell.Offset(0, i - 1), Len(CategoryName) - 3) = Left(CategoryName, Len(CategoryName) - 3) Then
+            nCategory = nCategory + 1
+            splitcat = Split(CategoryName, " ")
+            cat = splitcat(0)
+            ActiveCell.Offset(0, i - 1) = cat & " " & nCategory
+        End If
+    Next i
+    
+
+    Range("A1").Select
+    awb.Close SaveChanges:=True
+    filename = Dir
+Loop Until filename = ""
+
+
+'deleting column from twb master file
+
+twb.Activate
+Sheets("Roster").Select
+
+nItems = WorksheetFunction.CountA(Rows(1))
+Range("A1").Select
+
+For i = 1 To nItems
+    If ActiveCell.Offset(0, i - 1) = CategoryName Then
+        findaddress = ActiveCell.Offset(0, i - 1).Address
+        findarray = Split(findaddress, "$")
+        colletter = findarray(1)
+        Columns(colletter & ":" & colletter).Select
+        Selection.Delete Shift:=xlToLeft
+    End If
+Next i
+    
+nItems = WorksheetFunction.CountA(Rows(1))
+Range("A1").Select
+nCategory = 0
+    
+    
+For i = 1 To nItems
+    If Left(ActiveCell.Offset(0, i - 1), Len(CategoryName) - 3) = Left(CategoryName, Len(CategoryName) - 3) Then
+        nCategory = nCategory + 1
+        splitcat = Split(CategoryName, " ")
+        cat = splitcat(0)
+        ActiveCell.Offset(0, i - 1) = cat & " " & nCategory
+    End If
+Next i
+
+    
+'Turnon AutoFilter
+Sheets("Roster").EnableAutoFilter = True
+Sheets("Roster").Cells.AutoFilter
+
+Range("A1").Select
+
+
+'Application.DisplayAlerts = True
+Application.ScreenUpdating = True
+
+twb.Save
+
+Unload UserForm4
+Unload UserForm2
+
+MsgBox (CategoryName & " has been deleted from the files!" _
+    & vbCrLf & " " _
+    & vbCrLf & "Also, headings have been re-numbered." _
+    & vbCrLf & "e.g. Homework 2 has become Homework 1 etc.")
+    
+
+End Sub
+
+Private Sub CommandButton2_Click()
+Unload UserForm4
+
+End Sub

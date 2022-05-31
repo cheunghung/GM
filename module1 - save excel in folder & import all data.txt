@@ -1,0 +1,123 @@
+Option Explicit
+Public NewFolderName As String
+Public folder As String
+Public NewFileName As String
+
+
+Sub NewFolder()
+
+'Dim NewFolderName As String
+'Dim folder As String
+'Dim NewFileName As String
+Dim filename As String
+Dim twb As Workbook, awb As Workbook
+Dim lastrow As Integer
+
+On Error GoTo here
+
+Application.ScreenUpdating = False
+Application.DisplayAlerts = False
+
+'user specify name for new folder
+NewFolderName = InputBox("Please enter name of the course:")
+MsgBox ("Please choose the directory/folder where you'd like to place this new folder. A new folder named " & "'" & NewFolderName & "'" & " will be created in this directory.")
+
+'user specify path for new folder
+With Application.FileDialog(msoFileDialogFolderPicker)
+    .AllowMultiSelect = False
+    .Show
+folder = .SelectedItems(1)
+End With
+
+'create new folder
+MkDir folder & "\" & NewFolderName
+
+MsgBox ("New folder " & "'" & NewFolderName & "'" & " created in " & folder & ".")
+
+'automatically save grade manager excel to new folder
+NewFileName = "Grade Manager " & NewFolderName
+
+'Also can have user specify name of excel file
+'NewFileName = InputBox("Enter new file name (omit the .xlsm):")
+
+
+ActiveWorkbook.SaveAs filename:= _
+        folder & "\" & NewFolderName & "\" & NewFileName & ".xlsm" _
+        , FileFormat:=xlOpenXMLWorkbookMacroEnabled, CreateBackup:=False
+        
+
+Set twb = ThisWorkbook
+twb.Activate
+
+
+MsgBox ("This file has been saved as " & "'" & NewFileName & ".xlsm' in the folder " & "'" & NewFolderName & "'.")
+
+
+MsgBox ("Navigate to the initial class roster. This file must have student names in" _
+    & vbCrLf & "column A(Last Name, First name), SID numbers in column B, and section" _
+    & vbCrLf & "number in column C.")
+
+
+'import roster
+filename = Application.GetOpenFilename(FileFilter:="*.xlsx,*.xlsx", MultiSelect:=False)
+
+
+
+Workbooks.Open filename
+Set awb = ActiveWorkbook
+awb.Activate
+
+'unfilter awb roster
+If Sheets("Sheet1").AutoFilterMode Then
+    Sheets("Sheet1").AutoFilter.ShowAllData
+End If
+
+
+lastrow = Sheets("sheet1").Cells(Rows.Count, "A").End(xlUp).Row
+
+
+twb.Activate
+Sheets("Roster").Select
+
+'unfilter twb roster
+If Sheets("Roster").AutoFilterMode Then
+    Sheets("Roster").AutoFilter.ShowAllData
+End If
+
+
+'clear all cells in twb roster
+Sheets("Roster").UsedRange.ClearContents
+
+'paste values in twb roster
+Sheets("Roster").Range("A1:C" & lastrow).Value = awb.Sheets("Sheet1").Range("A1:C" & lastrow).Value
+
+'fix first row in twb roster
+Sheets("Roster").Application.ActiveWindow.SplitRow = 1
+Sheets("Roster").Application.ActiveWindow.FreezePanes = True
+
+'apply autofilter in twb roster (will apply autofilter after initialize spreadsheets instead)
+'Sheets("Roster").EnableAutoFilter = True
+'Sheets("Roster").Cells.AutoFilter
+
+'autofit columns in twb roster
+Cells.Select
+Cells.EntireColumn.AutoFit
+
+
+'closing awb excel
+awb.Activate
+awb.Close SaveChanges:=False
+
+twb.Activate
+
+Application.ScreenUpdating = True
+Application.DisplayAlerts = True
+
+Range("A1").Select
+
+Call runform1
+
+here:
+End Sub
+
+

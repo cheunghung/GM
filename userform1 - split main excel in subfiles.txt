@@ -1,0 +1,219 @@
+Option Explicit
+
+
+Private Sub CommandButton1_Click()
+
+
+
+Dim awb As Workbook, twb As Workbook
+Dim minSection As Integer, maxSection As Integer
+Dim nNames As Integer, nSections As Integer
+Dim k As Integer
+Dim i As Integer, j As Integer, lastrow As Integer
+Dim N() As String, ID() As String
+Dim NewFolderName2 As String
+
+
+Dim findaddress As String
+Dim findarray As Variant, colletter As String
+Dim nItems As Integer
+
+Sheets("Path").Visible = True
+
+Application.DisplayAlerts = False
+Application.ScreenUpdating = False
+
+Set twb = ThisWorkbook
+twb.Activate
+Sheets("Roster").Select
+
+'unfilter twb roster
+If Sheets("Roster").AutoFilterMode Then
+    Sheets("Roster").AutoFilter.ShowAllData
+End If
+
+lastrow = Sheets("Roster").Cells(Rows.Count, "A").End(xlUp).Row
+
+'finding no. of sections & names in twb roster
+minSection = WorksheetFunction.Min(Sheets("Roster").Range("C2:C" & lastrow))
+maxSection = WorksheetFunction.Max(Sheets("Roster").Range("C2:C" & lastrow))
+nNames = WorksheetFunction.CountA(Sheets("Roster").Range("A2:A" & lastrow))
+nSections = maxSection - minSection + 1
+
+'specify new folder to save the section files
+NewFolderName2 = "Section Grade Sheets"
+
+'create file path to save the section files
+MkDir folder & "\" & NewFolderName & "\" & NewFolderName2
+
+
+'for each section iterated, save names belonging to that section in a list
+For i = 1 To nSections
+    k = 0
+    For j = 1 To nNames
+        If Range("C" & j + 1) = "10" & i Then
+            k = k + 1
+            ReDim Preserve N(k)
+            ReDim Preserve ID(k)
+            N(k) = Range("A" & j + 1)
+            ID(k) = Range("B" & j + 1)
+        End If
+    Next j
+
+    'creating awb workbook to store each section's name & id
+    Workbooks.Add
+    Set awb = ActiveWorkbook
+    awb.Activate
+    
+    'manually added columns in awb roster
+    Range("A1") = twb.Sheets("Roster").Range("A1").Value
+    Range("B1") = twb.Sheets("Roster").Range("B1").Value
+    
+    'finding address of the 1st blank column heading in awb roster
+    nItems = WorksheetFunction.CountA(Rows(1))
+    Range("A1").Select
+    findaddress = ActiveCell.Offset(0, nItems).Address
+    findarray = Split(findaddress, "$")
+    colletter = findarray(1)
+    
+    'adding homework columns in awb roster
+    Range(colletter & "1").Select
+    For j = 1 To UserForm1.ComboBox1.ListIndex + 1
+        ActiveCell.Offset(0, j - 1) = "Homework " & j
+    Next j
+    
+    
+    'finding address of the 1st blank column heading in awb roster
+    nItems = WorksheetFunction.CountA(Rows(1))
+    Range("A1").Select
+    findaddress = ActiveCell.Offset(0, nItems).Address
+    findarray = Split(findaddress, "$")
+    colletter = findarray(1)
+    
+    'adding exam columns in awb roster
+    Range(colletter & "1").Select
+    For j = 1 To UserForm1.ComboBox2.ListIndex + 1
+        ActiveCell.Offset(0, j - 1) = "Exam " & j
+    Next j
+    
+    
+    'finding address of the 1st blank column heading in awb roster
+    nItems = WorksheetFunction.CountA(Rows(1))
+    Range("A1").Select
+    findaddress = ActiveCell.Offset(0, nItems).Address
+    findarray = Split(findaddress, "$")
+    colletter = findarray(1)
+    
+    'adding lab columns in awb roster
+    Range(colletter & "1").Select
+    For j = 1 To UserForm1.ComboBox3.ListIndex + 1
+        ActiveCell.Offset(0, j - 1) = "Lab " & j
+    Next j
+    
+    'copying names & student ID in awb roster for each section 10X
+    For j = 1 To k
+        Range("A" & j + 1) = N(j)
+        Range("B" & j + 1) = ID(j)
+    Next j
+
+    'saving the awb excel for section 10X
+    ActiveWorkbook.SaveAs filename:= _
+        folder & "\" & NewFolderName & "\" & NewFolderName2 & "\Section 10" & i & ".xlsx" _
+        , FileFormat:=xlOpenXMLWorkbook, CreateBackup:=False
+    
+    'closing awb excel
+    awb.Close SaveChanges:=False
+
+    
+Next i
+
+
+
+
+'adding columns to twb roster
+twb.Activate
+Sheets("Roster").Select
+
+
+'finding address of the 1st blank column heading in twb roster
+nItems = WorksheetFunction.CountA(Rows(1))
+Range("A1").Select
+findaddress = ActiveCell.Offset(0, nItems).Address
+findarray = Split(findaddress, "$")
+colletter = findarray(1)
+    
+'adding homework columns in twb roster
+Range(colletter & "1").Select
+For j = 1 To UserForm1.ComboBox1.ListIndex + 1
+    ActiveCell.Offset(0, j - 1) = "Homework " & j
+Next j
+    
+    
+'finding address of the 1st blank column heading in twb roster
+nItems = WorksheetFunction.CountA(Rows(1))
+Range("A1").Select
+findaddress = ActiveCell.Offset(0, nItems).Address
+findarray = Split(findaddress, "$")
+colletter = findarray(1)
+    
+'adding exam columns in twb roster
+Range(colletter & "1").Select
+For j = 1 To UserForm1.ComboBox2.ListIndex + 1
+    ActiveCell.Offset(0, j - 1) = "Exam " & j
+Next j
+    
+    
+'finding address of the 1st blank column heading in twb roster
+nItems = WorksheetFunction.CountA(Rows(1))
+Range("A1").Select
+findaddress = ActiveCell.Offset(0, nItems).Address
+findarray = Split(findaddress, "$")
+colletter = findarray(1)
+    
+'adding lab columns in twb roster
+Range(colletter & "1").Select
+For j = 1 To UserForm1.ComboBox3.ListIndex + 1
+    ActiveCell.Offset(0, j - 1) = "Lab " & j
+Next j
+
+
+
+'save file path to "section files folder" within "new folder"
+Sheets("Path").Range("A1").Value = folder & "\" & NewFolderName & "\" & NewFolderName2
+'save file path to "new folder"
+Sheets("Path").Range("A2").Value = folder & "\" & NewFolderName
+
+
+'apply autofilter in twb roster
+Sheets("Roster").EnableAutoFilter = True
+Sheets("Roster").Cells.AutoFilter
+
+'autofit columns in twb roster
+Cells.Select
+Cells.EntireColumn.AutoFit
+
+twb.Activate
+Range("A1").Select
+
+Application.DisplayAlerts = True
+Application.ScreenUpdating = True
+
+Sheets("Path").Visible = False
+
+twb.Save
+
+Unload UserForm1
+
+MsgBox ("Assignment headings have been added to the files!")
+
+
+End Sub
+
+Private Sub CommandButton2_Click()
+Unload UserForm1
+
+End Sub
+
+Private Sub Label3_Click()
+
+End Sub
